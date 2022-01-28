@@ -506,6 +506,22 @@ bool StreamConsumer::threadExecute(GstNvArgusCameraSrc *src)
     src->frameInfo->frameNum = iFrame->getNumber();
     src->frameInfo->frameTime = iFrame->getTime();
 
+    // Get the frame metadata
+    IArgusCaptureMetadata *iArgusCaptureMetadata = interface_cast<IArgusCaptureMetadata>(frame);
+    if (!iArgusCaptureMetadata) {
+      ORIGINATE_ERROR("Failed to get IArgusCaptureMetadata interface");
+    }
+    CaptureMetadata *ArgusMetadata = iArgusCaptureMetadata->getMetadata();
+    if (!ArgusMetadata) {
+      ORIGINATE_ERROR("Failed to get the IArgusMetadata interface");
+    }
+
+    ICaptureMetadata *iMetadata = interface_cast<ICaptureMetadata>(ArgusMetadata);
+    if (!iMetadata) {
+      ORIGINATE_ERROR("Failed to get the ICaptureMetadata interface");
+    }
+    auto sof_timestamp = static_cast<unsigned long long>(iMetadata->getSensorTimestamp());
+    cout << "Sensor timestamp: " << sof_timestamp << endl;
 
     g_mutex_lock (&src->argus_buffers_queue_lock);
     g_queue_push_tail (src->argus_buffers, (src->frameInfo));
