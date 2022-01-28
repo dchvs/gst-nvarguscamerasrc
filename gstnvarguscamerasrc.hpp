@@ -111,6 +111,7 @@ typedef struct NvArgusFrameInfo
   gint fd;
   guint64 frameNum;
   guint64 frameTime;
+  guint64 frame_timestamp;
 } NvArgusFrameInfo;
 
 struct _GstNvArgusCameraSrc
@@ -179,6 +180,7 @@ struct _GstNvArgusCameraSrc
   gboolean argus_in_error;
   void *iRequest_ptr;
   void *iCaptureSession_ptr;
+  void *iMetadata_ptr;
   void *iAutoControlSettings_ptr;
   void *request_ptr;
   void *outRequest_ptr;

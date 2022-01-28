@@ -66,6 +66,8 @@
   "format = (string) { NV12 }, " \
   "framerate = (fraction) [ 0, MAX ];"
 
+static GstStaticCaps stream_caps_ref = GST_STATIC_CAPS("timestamp/roboticsresearch");
+
 #define MIN_BUFFERS 6
 #define MAX_BUFFERS 8
 
@@ -520,8 +522,9 @@ bool StreamConsumer::threadExecute(GstNvArgusCameraSrc *src)
     if (!iMetadata) {
       ORIGINATE_ERROR("Failed to get the ICaptureMetadata interface");
     }
+    src->iMetadata_ptr = iMetadata;
     auto sof_timestamp = static_cast<unsigned long long>(iMetadata->getSensorTimestamp());
-    cout << "Sensor timestamp: " << sof_timestamp << endl;
+    src->frameInfo->frame_timestamp = sof_timestamp;
 
     g_mutex_lock (&src->argus_buffers_queue_lock);
     g_queue_push_tail (src->argus_buffers, (src->frameInfo));
@@ -1443,6 +1446,9 @@ consumer_thread (gpointer src_base)
       gst_buffer_unmap (buffer, &outmap);
 
     }
+
+    gst_buffer_add_reference_timestamp_meta(buffer,
+	gst_static_caps_get (&stream_caps_ref), consumerFrameInfo->frame_timestamp, GST_CLOCK_TIME_NONE);
 
     g_queue_push_tail (src->nvmm_buffers, buffer);
 
