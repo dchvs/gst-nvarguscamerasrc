@@ -1721,7 +1721,7 @@ gst_nv_argus_camera_src_class_init (GstNvArgusCameraSrcClass * klass)
     "NvArgusCameraSrc",
     "Video/Capture",
     "nVidia ARGUS Camera Source",
-    "Viranjan Pagar <vpagar@nvidia.com>, Amit Pandya <apandya@nvidia.com>");
+    "Viranjan Pagar <vpagar@nvidia.com>, Amit Pandya <apandya@nvidia.com>, Daniel Chaves <daniel.chaves@ridgerun.com>");
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&src_factory));
