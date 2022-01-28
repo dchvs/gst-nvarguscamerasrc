@@ -575,6 +575,7 @@ static bool execute(int32_t cameraIndex,
   {
     iStreamSettings->setPixelFormat(PIXEL_FMT_YCbCr_420_888);
     iStreamSettings->setResolution(streamSize);
+    iStreamSettings->setMetadataEnable(true);
   }
   UniqueObj<OutputStream> outputStream(iCaptureSession->createOutputStream(streamSettings.get()));
   IEGLOutputStream *iStream = interface_cast<IEGLOutputStream>(outputStream);
