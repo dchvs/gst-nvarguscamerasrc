@@ -39,7 +39,7 @@
 #  include <config.h>
 #endif
 
-#include <cstdlib>
+//#include <cstdlib>
 #include <gst/gst.h>
 #include <gst/video/video.h>
 #include <gst/base/gstbasesrc.h>
@@ -47,6 +47,8 @@
 #include <Argus/Argus.h>
 #include <EGLStream/EGLStream.h>
 #include <EGLStream/NV/ImageNativeBuffer.h>
+
+#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <math.h>
@@ -1447,8 +1449,19 @@ consumer_thread (gpointer src_base)
 
     }
 
+    std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
+    std::chrono::system_clock::duration dtn = tp.time_since_epoch();
+    std::chrono::steady_clock::time_point tp_steady = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::duration dtn_steady = tp_steady.time_since_epoch();
+
+    auto frame_epoch_timestamp = dtn - dtn_steady;
+
     gst_buffer_add_reference_timestamp_meta(buffer,
-	gst_static_caps_get (&stream_caps_ref), consumerFrameInfo->frame_timestamp, GST_CLOCK_TIME_NONE);
+	gst_static_caps_get (&stream_caps_ref), frame_epoch_timestamp, GST_CLOCK_TIME_NONE);
+
+    printf ("consumerFrameInfo->frame_timestamp => %llu\n", consumerFrameInfo->frame_timestamp);
+    printf ("consumerFrameInfo->frameTime => %llu\n", consumerFrameInfo->frameTime);
+    printf ("system_time_epoch_now, steady_uptime_now, boot_time_epoch? => %llu, \t%llu, \t%llu\n", dtn, dtn_steady, frame_epoch_timestamp);
 
     g_queue_push_tail (src->nvmm_buffers, buffer);
 
