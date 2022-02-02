@@ -1449,15 +1449,17 @@ consumer_thread (gpointer src_base)
 
     }
 
-    std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point tp = std::chrono::high_resolution_clock::now();
     std::chrono::system_clock::duration dtn = tp.time_since_epoch();
     std::chrono::steady_clock::time_point tp_steady = std::chrono::steady_clock::now();
     std::chrono::steady_clock::duration dtn_steady = tp_steady.time_since_epoch();
 
-    auto frame_epoch_timestamp = dtn - dtn_steady;
+    std::chrono::system_clock::duration frame_epoch_timestamp = dtn - dtn_steady;
+
+    GstClockTime gst_clock_time_frame_epoch_timestamp = (GstClockTime)(frame_epoch_timestamp.count());
 
     gst_buffer_add_reference_timestamp_meta(buffer,
-	gst_static_caps_get (&stream_caps_ref), frame_epoch_timestamp, GST_CLOCK_TIME_NONE);
+	gst_static_caps_get (&stream_caps_ref), gst_clock_time_frame_epoch_timestamp, GST_CLOCK_TIME_NONE);
 
     printf ("consumerFrameInfo->frame_timestamp => %llu\n", consumerFrameInfo->frame_timestamp);
     printf ("consumerFrameInfo->frameTime => %llu\n", consumerFrameInfo->frameTime);
