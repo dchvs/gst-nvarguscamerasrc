@@ -1462,7 +1462,7 @@ consumer_thread (gpointer src_base)
     gst_buffer_add_reference_timestamp_meta(buffer,
 	gst_static_caps_get (&stream_caps_ref), gst_clock_time_frame_epoch_timestamp, GST_CLOCK_TIME_NONE);
 
-    GST_DEBUG_OBJECT (src, "%s: Frame Epoch timestamp = %d\n", __func__, frame_epoch_timestamp);
+    GST_DEBUG_OBJECT (src, "%s: Frame Epoch timestamp = %lu\n", __func__, gst_clock_time_frame_epoch_timestamp);
 
     g_queue_push_tail (src->nvmm_buffers, buffer);
 
