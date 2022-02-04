@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
+import time
+
 from gi.repository import Gst
 from gi.repository import GObject
 
-desc0 = "videotestsrc ! appsink emit-signals=true name=appsink "
-desc = "nvarguscamerasrc ! appsink emit-signals=true name=appsink "
+desc = "nvarguscamerasrc name=nvarguscamerasrc ! appsink emit-signals=true name=appsink "
 
 class BufferingMaster:
         pass
@@ -36,7 +37,24 @@ class AppsinkMaster:
 
                 timestamp_meta = buffer.get_reference_timestamp_meta(Gst.Caps.from_string("timestamp/roboticsresearch"))
 
-                print ("\nAppSink buffer timestamp metadata: timestamp => ", timestamp_meta.timestamp, "\n")
+                print ("AppSink buffer timestamp metadata: timestamp => ", timestamp_meta.timestamp)
+
+
+class PadProbeMaster():
+        def __init__(self):
+                pass
+        def get_buffer(self, probe):
+                src_pad = probe.get_static_pad("src")
+                probe_id = src_pad.add_probe(Gst.PadProbeType.BUFFER, self.probe_callback)
+
+        def probe_callback(self, pad, info):
+                buffer = info.get_buffer()
+                timestamp_meta = buffer.get_reference_timestamp_meta(Gst.Caps.from_string("timestamp/roboticsresearch"))
+
+                print("PadProbe buffer timestamp metadata: timestamp => ", timestamp_meta.timestamp)
+
+                return Gst.PadProbeReturn.OK
+
 
 
 GObject.MainLoop()
@@ -46,3 +64,8 @@ m.start()
 
 appsink_master = AppsinkMaster()
 appsink_master.get_buffer(m.get_element("appsink"))
+
+pad_probe_master = PadProbeMaster()
+pad_probe_master.get_buffer(m.get_element("nvarguscamerasrc"))
+
+time.sleep(3)
