@@ -1,10 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from argparse import ArgumentParser
 import os
 import time
 
 from gi.repository import Gst
+from gi.repository import GLib
 from gi.repository import GObject
 
 SECONDS_TO_NANOSECONDS = 1000000000
@@ -43,7 +44,7 @@ class GStreamerMaster:
         def create_pipe(self, desc):
                 try:
                         self.pipeline = Gst.parse_launch(desc)
-                except glib.GError as e:
+                except GLib.GError as e:
                         raise GStreamerMasterError("Unable to create the media") from e
 
         def start(self):
@@ -52,12 +53,12 @@ class GStreamerMaster:
                         raise GStreamerMasterError("Unable to start the media") from e
 
         def stop(self):
-                ret, current, pending = self.pipeline.get_state(gst.CLOCK_TIME_NONE)
+                ret, current, pending = self.pipeline.get_state(Gst.CLOCK_TIME_NONE)
                 if Gst.State.PLAYING == current:
-                        self.pipeline.send_event(gst.Event.new_eos())
-                        self.pipeline.get_bus().timed_pop_filtered(TIMEOUT_NS, gst.MessageType.EOS)
+                        self.pipeline.send_event(Gst.Event.new_eos())
+                        self.pipeline.get_bus().timed_pop_filtered(TIMEOUT_NS, Gst.MessageType.EOS)
                         ret = self.pipeline.set_state(Gst.State.NULL)
-                        if gst.StateChangeReturn.FAILURE == ret:
+                        if Gst.StateChangeReturn.FAILURE == ret:
                                 raise GStreamerMasterError("Unable to stop the media") from e
 
         def get_element(self, element):
@@ -123,13 +124,11 @@ class App():
                 self.user_padprobe_buffer_callback = UserPadProbeBuffersCallback()
 
         def run(self):
-                self.gstreamer_master.start()
-
                 self.appsink_master = AppsinkMaster(self.gstreamer_master.get_element("appsink"), self.user_appsink_buffer_callback)
 
                 self.pad_probe_master = PadProbeMaster(self.gstreamer_master.get_element("nvarguscamerasrc"), self.user_padprobe_buffer_callback)
 
-                time.sleep(3)
+                self.gstreamer_master.start()
 
         def stop(self):
                 self.gstreamer_master.stop()
@@ -150,7 +149,8 @@ if __name__ == '__main__':
         app = App()
         try:
                 app.run()
+                GLib.MainLoop().run()
                 print("Running the app...")
-        except KeyboardInterupt:
+        except KeyboardInterrupt:
                 print("Cleanning up")
                 app.stop()
